@@ -26,6 +26,7 @@ int main(int argc, char **argv){
 	int *seconds = (int *)shmat(svarid1, NULL, 0);
 	int *nano_seconds = (int *)shmat(svarid2, NULL, 0);
 	int end_time = process_time + *nano_seconds;
+
 	while(1){
 		if(*nano_seconds > end_time){
 			time_t t = time(NULL);
@@ -35,4 +36,5 @@ int main(int argc, char **argv){
 			break;
 		}
 	}
+	return 0;
 }

@@ -4,6 +4,8 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 void read_args(int argc, char **argv,int *h, int *n, int *s, char **i, char **o){
 	int j = 0;
@@ -41,8 +43,31 @@ int main(int argc, char **argv){
 	svarid1 = shmget(svar1, sizeof(int), IPC_CREAT | 0666);
 	svarid2 = shmget(svar2, sizeof(int), IPC_CREAT | 0666);
 	read_args(argc, argv, &h, &n, &s, &i, &o);
-	int *svarptr1 = (int *)shmat(svarid1, NULL, 0);
-	int *svarptr2 = (int *)shmat(svarid2, NULL, 0);
-	*svarptr1 = 0;
-	*svarptr1 = 0;
+	int *seconds = (int *)shmat(svarid1, NULL, 0);
+	int *nano_seconds = (int *)shmat(svarid2, NULL, 0);
+	*seconds = 0;
+	*nano_seconds = 0;
+	int increment = 20;
+	int pids[n];
+	int j =0;
+	for (j = 0 ; j < n ; j++){
+		pids[j] = fork();
+		if(pids[j] == 0){
+			char *const paramList[] = {"./user", "2000", NULL};
+			int r= execv("./user", paramList);
+		}
+	}
+
+	int stat;
+	while(1){
+		int done = 1;
+		for(j = 0 ; j < n ; j++){
+			done = done * waitpid(pids[j] , &stat, WNOHANG);
+		}
+		if(done != 0){
+			break;
+		}else{
+			*nano_seconds = *nano_seconds + increment;
+		}
+	}
 }
